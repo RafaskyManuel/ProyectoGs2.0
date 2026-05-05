@@ -1,0 +1,448 @@
+/* =========================================================
+   ProyectoGS - estiloPersonalizado.css
+   Estilos reutilizables para proyectos Google Apps Script
+   Requiere Bootstrap 5 + Bootstrap Icons
+   ========================================================= */
+
+/* ---------- Variables base ---------- */
+:root {
+  --pgs-primary: #0d6efd;
+  --pgs-primary-dark: #14376d;
+  --pgs-dark: #212529;
+  --pgs-success: #198754;
+  --pgs-danger: #dc3545;
+  --pgs-warning: #ffc107;
+  --pgs-info: #0dcaf0;
+  --pgs-light-bg: #f8f9fa;
+  --pgs-card-bg: #ffffff;
+  --pgs-border: #dee2e6;
+  --pgs-muted: #6c757d;
+  --pgs-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
+  --pgs-radius: 0.5rem;
+}
+
+/* ---------- Base ---------- */
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  background-color: var(--pgs-light-bg);
+}
+
+/* ---------- Contenedores estándar ---------- */
+.modulo-container {
+  padding: 1.5rem;
+}
+
+.modulo-card {
+  background: var(--pgs-card-bg);
+  border: 0;
+  border-radius: var(--pgs-radius);
+  box-shadow: var(--pgs-shadow);
+  overflow: hidden;
+}
+
+.modulo-header {
+  background-color: var(--pgs-dark);
+  color: #ffffff;
+  padding: 0.85rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.modulo-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+}
+
+.modulo-body {
+  background: #ffffff;
+  padding: 1rem;
+}
+
+/* Compatible con pantallas antiguas */
+.table-container {
+  margin-top: 20px;
+  box-shadow: var(--pgs-shadow);
+  background-color: #fff;
+  border-radius: var(--pgs-radius);
+  padding: 20px;
+}
+
+.search-add-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 20px;
+}
+
+/* ---------- Filtros ---------- */
+.modulo-filtros,
+.pgs-filtros {
+  background: #ffffff;
+  border-radius: var(--pgs-radius);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.05);
+}
+
+.pgs-filtro-label {
+  font-weight: 700;
+  font-size: 0.875rem;
+  margin-bottom: 0.35rem;
+}
+
+/* ---------- Loader ---------- */
+.modulo-loader,
+.pgs-loader {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.pgs-loader-title {
+  font-weight: 700;
+  margin-top: 0.65rem;
+}
+
+.pgs-loader-subtitle {
+  color: var(--pgs-muted);
+  font-size: 0.875rem;
+}
+
+/* ---------- Tablas ---------- */
+.table thead th {
+  background-color: #f7f7f7;
+  font-weight: bold;
+  vertical-align: middle;
+}
+
+.table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.table td,
+.table th {
+  vertical-align: middle;
+}
+
+.pgs-table-wrapper {
+  width: 100%;
+}
+
+/* Hace que la tabla sea amigable en pantallas pequeñas */
+.pgs-table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* ---------- DataTables ---------- */
+.dataTables_wrapper .dataTables_length select {
+  min-width: 70px;
+}
+
+.dataTables_wrapper .dataTables_filter input {
+  min-width: 180px;
+}
+
+.dataTables_wrapper .dt-buttons {
+  display: inline-flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.dataTables_wrapper .dt-buttons .btn {
+  margin-right: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.dataTables_wrapper .pagination {
+  margin-bottom: 0;
+}
+
+/* ---------- Botones de acción ---------- */
+.acciones-tabla,
+.pgs-acciones {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* Compatible con tus íconos actuales */
+.custom-icon {
+  border: 2px solid;
+  border-radius: 8px;
+  padding: 3px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.edit-icon {
+  color: #007bff;
+  border-color: #007bff;
+  margin-right: 3px;
+}
+
+.edit-icon:hover {
+  background-color: #007bff;
+  color: #ffffff;
+}
+
+.delete-icon {
+  color: #dc3545;
+  border-color: #dc3545;
+  margin-right: 3px;
+}
+
+.delete-icon:hover {
+  background-color: #dc3545;
+  color: #ffffff;
+}
+
+.view-icon {
+  color: #198754;
+  border-color: #198754;
+  margin-right: 3px;
+}
+
+.view-icon:hover {
+  background-color: #198754;
+  color: #ffffff;
+}
+
+.print-icon {
+  color: #fedf00;
+  border-color: #fedf00;
+  margin-right: 3px;
+}
+
+.print-icon:hover {
+  background-color: #fedf00;
+  color: #ffffff;
+}
+
+.send-icon {
+  color: #feb100;
+  border-color: #feb100;
+  margin-right: 3px;
+}
+
+.send-icon:hover {
+  background-color: #feb100;
+  color: #ffffff;
+}
+
+/* Nuevos botones de acción genéricos */
+.pgs-btn-accion {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 31px;
+  height: 31px;
+  border-radius: 0.45rem;
+  border: 2px solid currentColor;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.pgs-btn-editar {
+  color: #0d6efd;
+}
+
+.pgs-btn-editar:hover {
+  background: #0d6efd;
+  color: #ffffff;
+}
+
+.pgs-btn-eliminar {
+  color: #dc3545;
+}
+
+.pgs-btn-eliminar:hover {
+  background: #dc3545;
+  color: #ffffff;
+}
+
+.pgs-btn-ver {
+  color: #198754;
+}
+
+.pgs-btn-ver:hover {
+  background: #198754;
+  color: #ffffff;
+}
+
+.pgs-btn-imprimir {
+  color: #6c757d;
+}
+
+.pgs-btn-imprimir:hover {
+  background: #6c757d;
+  color: #ffffff;
+}
+
+/* ---------- Badges estándar ---------- */
+.pgs-badge {
+  display: inline-block;
+  min-width: 72px;
+  padding: 0.35rem 0.65rem;
+  border-radius: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.pgs-badge-success {
+  background: #198754;
+  color: #ffffff;
+}
+
+.pgs-badge-warning {
+  background: #ffc107;
+  color: #212529;
+}
+
+.pgs-badge-danger {
+  background: #f1b6bd;
+  color: #ffffff;
+}
+
+.pgs-badge-secondary {
+  background: #6c757d;
+  color: #ffffff;
+}
+
+.pgs-badge-info {
+  background: #0dcaf0;
+  color: #212529;
+}
+
+/* ---------- Imágenes ---------- */
+.rounded {
+  height: 150px;
+  width: 150px;
+}
+
+.imgThumbnail,
+.pgs-img-thumbnail {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 0.35rem;
+}
+
+.pgs-img-producto {
+  width: 110px;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 0.45rem;
+}
+
+/* ---------- Formularios ---------- */
+.pgs-required::after {
+  content: " *";
+  color: var(--pgs-danger);
+  font-weight: 700;
+}
+
+.pgs-error {
+  color: var(--pgs-danger);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: none;
+}
+
+/* ---------- Wizard / secciones ---------- */
+.progress-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.iconos-seccion {
+  text-align: center;
+  cursor: pointer;
+}
+
+.iconos-seccion i {
+  font-size: 2rem;
+  color: var(--pgs-primary);
+}
+
+.iconos-seccion.completed i {
+  color: var(--pgs-success);
+}
+
+.progress-bar {
+  height: 5px;
+  background-color: var(--pgs-primary);
+  flex-grow: 1;
+  margin: 0 10px;
+}
+
+.iconos-seccion.active i {
+  color: var(--pgs-primary-dark);
+}
+
+.section {
+  display: none;
+}
+
+.section.active {
+  display: block;
+}
+
+/* ---------- Utilidades ---------- */
+.pgs-text-muted {
+  color: var(--pgs-muted);
+}
+
+.pgs-shadow {
+  box-shadow: var(--pgs-shadow);
+}
+
+.pgs-rounded {
+  border-radius: var(--pgs-radius);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+  .modulo-container {
+    padding: 1rem 0.5rem;
+  }
+
+  .modulo-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .modulo-header .btn {
+    width: 100%;
+  }
+
+  .search-add-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .dataTables_wrapper .dataTables_filter,
+  .dataTables_wrapper .dataTables_length,
+  .dataTables_wrapper .dataTables_info,
+  .dataTables_wrapper .dataTables_paginate {
+    text-align: left !important;
+    margin-bottom: 0.5rem;
+  }
+}
