@@ -1,12 +1,11 @@
 
 ```text
-ProyectoGS/
-├── css/
-│   └── estiloPersonalizado.css
-└── js/
-    ├── validaciones.js
-    ├── JsMensajes.js
-    └── datatableConfig.js
+ProyectoGs2.0/
+├── JsMensajes.js
+├── README.md
+├── datatableConfig.js
+├── estiloPersonalizado.css
+└── validaciones.js
 ```
 
 ## Orden recomendado de carga en tus HTML
