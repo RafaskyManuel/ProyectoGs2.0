@@ -22,7 +22,7 @@ ProyectoGS/
 <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
 
 <!-- Tu CSS global -->
-<link rel="stylesheet" href="https://rafaskymanuel.github.io/ProyectoGs2.0/estiloPersonalizado.css">
+<link rel="stylesheet" href="https://rafaskymanuel.github.io/ProyectoGs2.0/css/estiloPersonalizado.css">
 
 <!-- Scripts base -->
 <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
@@ -45,9 +45,9 @@ ProyectoGS/
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <!-- Tus JS globales -->
-<script src="https://rafaskymanuel.github.io/ProyectoGs2.0/validaciones.js"></script>
-<script src="https://rafaskymanuel.github.io/ProyectoGs2.0/JsMensajes.js"></script>
-<script src="https://rafaskymanuel.github.io/ProyectoGs2.0/datatableConfig.js"></script>
+<script src="https://rafaskymanuel.github.io/ProyectoGs2.0/js/validaciones.js"></script>
+<script src="https://rafaskymanuel.github.io/ProyectoGs2.0/js/JsMensajes.js"></script>
+<script src="https://rafaskymanuel.github.io/ProyectoGs2.0/js/datatableConfig.js"></script>
 ```
 
 ## Ejemplo de DataTable
