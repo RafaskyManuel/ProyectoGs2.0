@@ -8,7 +8,9 @@ window.PGS_VALIDACIONES_CONFIG = window.PGS_VALIDACIONES_CONFIG || {
   telefonoLongitud: 8,
   precioMaximo: 99999,
   precioMaxDigitos: 5,
-  dpiLongitud: 13
+  dpiLongitud: 13,
+  nitLongitud: 8,    
+  nitEstricto: false
 };
 
 /**
@@ -310,3 +312,121 @@ function configurarValidaciones(config = {}) {
     ...config
   };
 }
+
+
+/**
+ * Calcula el dígito verificador de un NIT guatemalteco (módulo 11).
+ *
+ * @param {string} cuerpo Dígitos del NIT sin el verificador.
+ * @returns {string} '0' a '9' o 'K'.
+ */
+function pgsDigitoVerificadorNIT(cuerpo) {
+  const digitos = String(cuerpo || '').replace(/\D/g, '');
+  if (!digitos) return '';
+
+  const largo = digitos.length;
+  let suma = 0;
+
+  for (let i = 0; i < largo; i++) {
+    suma += Number(digitos.charAt(i)) * (largo + 1 - i);
+  }
+
+  const calculado = 11 - (suma % 11);
+
+  if (calculado === 11) return '0';
+  if (calculado === 10) return 'K';
+  return String(calculado);
+}
+
+/**
+ * Normaliza un NIT: mayúsculas, sin guiones ni espacios.
+ * Deja solo dígitos y la K final.
+ */
+function pgsLimpiarNIT(valor) {
+  return String(valor || '')
+    .toUpperCase()
+    .replace(/[^0-9K]/g, '')
+    .replace(/K(?=.)/g, '');
+}
+
+/**
+ * Devuelve el NIT con guion antes del verificador. Ej. 1234567-8
+ */
+function pgsFormatearNIT(valor) {
+  const limpio = pgsLimpiarNIT(valor);
+  if (limpio.length < 2) return limpio;
+  return limpio.slice(0, -1) + '-' + limpio.slice(-1);
+}
+
+/**
+ * Valida un NIT guatemalteco.
+ *
+ * Acepta "CF" como valor válido (consumidor final).
+ * La prueba real es el dígito verificador, que funciona para NITs de
+ * cualquier longitud. La longitud esperada solo se exige cuando
+ * PGS_VALIDACIONES_CONFIG.nitEstricto es true.
+ *
+ * @param {string|HTMLElement} input Id o elemento del campo.
+ * @param {string|HTMLElement} error Id o elemento del contenedor de error.
+ * @param {boolean} permitirCF Si true, "CF" se considera válido.
+ * @returns {boolean}
+ */
+function validarNIT(input, error, permitirCF = false) {
+  const elemento = pgsGetElement(input);
+  if (!elemento) return false;
+
+  const config = window.PGS_VALIDACIONES_CONFIG || {};
+  const longitudEsperada = config.nitLongitud || 8;
+  const estricto = config.nitEstricto === true;
+
+  const crudo = String(elemento.value || '').trim().toUpperCase();
+
+  if (permitirCF && crudo === 'CF') {
+    elemento.value = 'CF';
+    pgsMostrarError(error, '');
+    return true;
+  }
+
+  const limpio = pgsLimpiarNIT(crudo);
+
+  if (!limpio) {
+    pgsMostrarError(error, 'Ingrese el NIT');
+    return false;
+  }
+
+  if (limpio.length < 2) {
+    pgsMostrarError(error, 'El NIT está incompleto');
+    return false;
+  }
+
+  if (limpio.length > longitudEsperada + 1) {
+    pgsMostrarError(error, `El NIT no debe pasar de ${longitudEsperada} caracteres`);
+    return false;
+  }
+
+  if (estricto && limpio.length !== longitudEsperada) {
+    pgsMostrarError(error, `El NIT debe tener ${longitudEsperada} caracteres`);
+    return false;
+  }
+
+  const cuerpo = limpio.slice(0, -1);
+  const verificador = limpio.slice(-1);
+
+  if (!/^\d+$/.test(cuerpo)) {
+    pgsMostrarError(error, 'El NIT solo admite números y una K final');
+    return false;
+  }
+
+  const esperado = pgsDigitoVerificadorNIT(cuerpo);
+
+  if (esperado !== verificador) {
+    pgsMostrarError(error, `Dígito verificador incorrecto. Debería ser ${cuerpo}-${esperado}`);
+    return false;
+  }
+
+  // Se deja formateado para que se vea igual en toda la aplicación.
+  elemento.value = pgsFormatearNIT(limpio);
+  pgsMostrarError(error, '');
+  return true;
+}
+
