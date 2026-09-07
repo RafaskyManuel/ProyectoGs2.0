@@ -1,10 +1,9 @@
-
 <!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Lector QR</title>
+  <title>AVEXPRESS · Lector QR</title>
 
   <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
 
@@ -116,7 +115,7 @@
 <body>
   <main class="wrap">
     <section class="card">
-      <h1>Lector QR</h1>
+      <h1>AVEXPRESS · Lector QR</h1>
       <div class="muted">
         Apunte la cámara al código. Cada lectura se envía a Bodega automáticamente.
       </div>
@@ -140,11 +139,11 @@
         <button id="btnCerrar" type="button">Cerrar lector</button>
       </div>
 
-      <!--<div class="ayuda">
+      <div class="ayuda">
         Si es la primera vez, Chrome pedirá permiso para usar la cámara en
         <strong>rafaskymanuel.github.io</strong>. Debe seleccionar <strong>Permitir</strong>.
-        Para volver a escanear la misma pieza, retire el QR de la cámara y vuelva a mostrarlo.
-      </div>-->
+        AVEXPRESS evita duplicados por sesión. Si necesita repetir intencionalmente un código, use el botón para limpiar los escaneos en Bodega.
+      </div>
     </section>
   </main>
 
@@ -275,8 +274,10 @@
       } else {
         cuadrosSinCodigo++;
 
-        // Aproximadamente medio segundo sin QR antes de permitir repetir el mismo.
-        if (cuadrosSinCodigo > 15) {
+        // Exige varios segundos continuos sin ver ningún QR antes de
+        // permitir que el mismo código vuelva a salir del lector externo.
+        // AVEXPRESS además aplica su propia protección por sesión.
+        if (cuadrosSinCodigo > 90) {
           codigoVisible = '';
           cuadrosSinCodigo = 0;
         }
