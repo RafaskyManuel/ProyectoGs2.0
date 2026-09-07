@@ -1,1 +1,351 @@
 
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>AVEXPRESS · Lector QR</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f7fb;
+      color: #172033;
+    }
+    .wrap { max-width: 520px; margin: 0 auto; padding: 16px; }
+    .card {
+      background: #fff;
+      border: 1px solid #e3e8ef;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, .08);
+    }
+    h1 { font-size: 1.15rem; margin: 0 0 4px; }
+    .muted { color: #667085; font-size: .9rem; }
+    .visor {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      margin-top: 14px;
+      overflow: hidden;
+      border-radius: 14px;
+      background: #111827;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    canvas { display: none; }
+    .mira {
+      position: absolute;
+      inset: 15%;
+      border: 3px solid rgba(255,255,255,.92);
+      border-radius: 14px;
+      box-shadow: 0 0 0 100vmax rgba(0,0,0,.25);
+      pointer-events: none;
+    }
+    .mira::after {
+      content: "";
+      position: absolute;
+      left: 4%;
+      right: 4%;
+      top: 50%;
+      height: 2px;
+      background: #22c55e;
+      animation: barrido 1.6s ease-in-out infinite;
+    }
+    @keyframes barrido {
+      0%,100% { top: 8%; }
+      50% { top: 92%; }
+    }
+    .estado {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: .9rem;
+      background: #eef2ff;
+      color: #3730a3;
+    }
+    .estado.ok { background: #ecfdf3; color: #166534; }
+    .estado.error { background: #fff1f2; color: #991b1b; }
+    .ultimo {
+      margin-top: 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: #fff;
+    }
+    .codigo {
+      margin-top: 4px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 1.1rem;
+      font-weight: 800;
+      word-break: break-all;
+    }
+    .acciones {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 10px;
+      padding: 11px 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    #btnIniciar { background: #111827; color: #fff; }
+    #btnCerrar { background: #e5e7eb; color: #111827; }
+    .ayuda {
+      margin-top: 12px;
+      font-size: .8rem;
+      color: #667085;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="wrap">
+    <section class="card">
+      <h1>AVEXPRESS · Lector QR</h1>
+      <div class="muted">
+        Apunte la cámara al código. Cada lectura se envía a Bodega automáticamente.
+      </div>
+
+      <div class="visor">
+        <video id="video" playsinline autoplay muted></video>
+        <div class="mira"></div>
+      </div>
+
+      <canvas id="canvas"></canvas>
+
+      <div id="estado" class="estado">Preparando cámara…</div>
+
+      <div class="ultimo">
+        <div class="muted">Último código enviado</div>
+        <div id="ultimoCodigo" class="codigo">—</div>
+      </div>
+
+      <div class="acciones">
+        <button id="btnIniciar" type="button">Iniciar cámara</button>
+        <button id="btnCerrar" type="button">Cerrar lector</button>
+      </div>
+
+      <div class="ayuda">
+        Si es la primera vez, Chrome pedirá permiso para usar la cámara en
+        <strong>rafaskymanuel.github.io</strong>. Debe seleccionar <strong>Permitir</strong>.
+        Para volver a escanear la misma pieza, retire el QR de la cámara y vuelva a mostrarlo.
+      </div>
+    </section>
+  </main>
+
+<script>
+(function() {
+  'use strict';
+
+  var video = document.getElementById('video');
+  var canvas = document.getElementById('canvas');
+  var ctx = canvas.getContext('2d', { willReadFrequently: true });
+  var estado = document.getElementById('estado');
+  var ultimoCodigo = document.getElementById('ultimoCodigo');
+  var btnIniciar = document.getElementById('btnIniciar');
+  var btnCerrar = document.getElementById('btnCerrar');
+
+  var stream = null;
+  var activo = false;
+
+  /*
+   * Evita que un QR quieto frente a la cámara se envíe muchas veces.
+   * La misma referencia vuelve a habilitarse cuando desaparece de la imagen.
+   */
+  var codigoVisible = '';
+  var cuadrosSinCodigo = 0;
+
+  btnIniciar.addEventListener('click', iniciarCamara);
+  btnCerrar.addEventListener('click', function() {
+    detenerCamara();
+    window.close();
+  });
+
+  window.addEventListener('beforeunload', detenerCamara);
+
+  function setEstado(texto, tipo) {
+    estado.textContent = texto;
+    estado.className = 'estado' + (tipo ? ' ' + tipo : '');
+  }
+
+  function iniciarCamara() {
+    if (activo) return;
+
+    if (typeof jsQR === 'undefined') {
+      setEstado('No se pudo cargar la librería jsQR.', 'error');
+      return;
+    }
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setEstado('Este navegador no expone la API de cámara.', 'error');
+      return;
+    }
+
+    setEstado('Solicitando acceso a la cámara…');
+
+    navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: {
+        facingMode: { ideal: 'environment' }
+      }
+    })
+    .then(function(nuevoStream) {
+      stream = nuevoStream;
+      video.srcObject = stream;
+
+      return video.play();
+    })
+    .then(function() {
+      activo = true;
+      setEstado('Cámara activa. Apunte al código QR.', 'ok');
+      requestAnimationFrame(leerCuadro);
+    })
+    .catch(function(error) {
+      activo = false;
+
+      var nombre = error && error.name ? error.name : 'Error';
+      var mensaje = 'No se pudo abrir la cámara.';
+
+      if (nombre === 'NotAllowedError') {
+        mensaje =
+          'Permiso de cámara rechazado. Habilite la cámara para rafaskymanuel.github.io y vuelva a intentar.';
+      } else if (nombre === 'NotFoundError' || nombre === 'DevicesNotFoundError') {
+        mensaje = 'No se encontró una cámara disponible.';
+      } else if (nombre === 'NotReadableError') {
+        mensaje = 'La cámara está ocupada por otra aplicación o pestaña.';
+      }
+
+      setEstado(mensaje + ' (' + nombre + ')', 'error');
+      console.error(error);
+    });
+  }
+
+  function detenerCamara() {
+    activo = false;
+
+    if (stream) {
+      stream.getTracks().forEach(function(track) {
+        track.stop();
+      });
+      stream = null;
+    }
+
+    video.srcObject = null;
+  }
+
+  function leerCuadro() {
+    if (!activo) return;
+
+    if (video.readyState === video.HAVE_ENOUGH_DATA &&
+        video.videoWidth > 0 &&
+        video.videoHeight > 0) {
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      var imagen = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      var qr = jsQR(imagen.data, imagen.width, imagen.height);
+
+      if (qr && qr.data) {
+        cuadrosSinCodigo = 0;
+
+        var codigo = String(qr.data).trim();
+
+        if (codigo && codigo !== codigoVisible) {
+          codigoVisible = codigo;
+          enviarCodigo(codigo);
+        }
+      } else {
+        cuadrosSinCodigo++;
+
+        // Aproximadamente medio segundo sin QR antes de permitir repetir el mismo.
+        if (cuadrosSinCodigo > 15) {
+          codigoVisible = '';
+          cuadrosSinCodigo = 0;
+        }
+      }
+    }
+
+    requestAnimationFrame(leerCuadro);
+  }
+
+  function enviarCodigo(codigo) {
+    ultimoCodigo.textContent = codigo;
+
+    if (!window.opener || window.opener.closed) {
+      setEstado(
+        'Código leído, pero AVEXPRESS ya no está disponible. Abra el lector desde Bodega.',
+        'error'
+      );
+      return;
+    }
+
+    /*
+     * No enviamos tokens, credenciales ni datos de sesión.
+     * Únicamente se devuelve el texto del QR a la ventana que abrió el lector.
+     * El receptor AVEXPRESS valida que el origen sea rafaskymanuel.github.io.
+     */
+    window.opener.postMessage({
+      type: 'AVX_QR',
+      codigo: codigo
+    }, '*');
+
+    hacerPitido();
+
+    if (navigator.vibrate) {
+      try { navigator.vibrate(80); } catch (e) {}
+    }
+
+    setEstado('Código enviado a AVEXPRESS: ' + codigo, 'ok');
+  }
+
+  function hacerPitido() {
+    try {
+      var AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+
+      var ac = new AudioCtx();
+      var osc = ac.createOscillator();
+      var gain = ac.createGain();
+
+      osc.frequency.value = 880;
+      gain.gain.value = 0.08;
+
+      osc.connect(gain);
+      gain.connect(ac.destination);
+
+      osc.start();
+
+      setTimeout(function() {
+        osc.stop();
+        ac.close();
+      }, 100);
+    } catch (e) {}
+  }
+
+  /*
+   * Intento automático. Si el navegador exige interacción adicional,
+   * el botón "Iniciar cámara" queda disponible.
+   */
+  iniciarCamara();
+})();
+</script>
+</body>
+</html>
