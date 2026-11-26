@@ -33,6 +33,78 @@ function pgsGetBoton(boton) {
 }
 
 /* =========================================================
+   ESCRIBIR EN UN MENSAJE ABIERTO ENCIMA DE UNA VENTANA
+   ---------------------------------------------------------
+   Un mensaje con campo de texto (por ejemplo, el motivo para
+   anular un cierre o una guía) abierto encima de una ventana
+   de Bootstrap no dejaba escribir: la ventana de abajo le
+   "robaba" el cursor. Mientras el mensaje está abierto se
+   suelta ese bloqueo; al cerrarse, se devuelve.
+
+   Se instala solo al cargar este archivo, para todos los
+   módulos. Usa la misma marca que el arreglo que ya tenía
+   Operaciones, así nunca se aplica dos veces.
+   ========================================================= */
+
+function pgsProtegerMensajesSobreVentanas() {
+  if (!pgsExisteSwal() || Swal.__avxSobreVentanas) return;
+
+  var original = Swal.fire.bind(Swal);
+
+  Swal.fire = function() {
+    var trampas = [];
+
+    document.querySelectorAll('.modal.show').forEach(function(el) {
+      var inst = window.bootstrap && bootstrap.Modal && bootstrap.Modal.getInstance
+        ? bootstrap.Modal.getInstance(el)
+        : null;
+      var trampa = inst && inst._focustrap;
+
+      if (trampa && typeof trampa.deactivate === 'function') {
+        try {
+          trampa.deactivate();
+          trampas.push({ trampa: trampa, el: el });
+        } catch (e) {}
+      }
+    });
+
+    var promesa = original.apply(null, arguments);
+
+    if (trampas.length && promesa && typeof promesa.then === 'function') {
+      var devolver = function() {
+        // Solo si la ventana sigue abierta y no quedó otro mensaje encima.
+        setTimeout(function() {
+          trampas.forEach(function(x) {
+            if (x.el.classList.contains('show') && !Swal.isVisible()) {
+              try { x.trampa.activate(); } catch (e) {}
+            }
+          });
+        }, 0);
+      };
+      promesa.then(devolver, devolver);
+    }
+
+    return promesa;
+  };
+
+  Swal.__avxSobreVentanas = true;
+}
+
+/*
+ * Respaldo: si el mensaje se abrió sin pasar por Swal.fire (o la ventana
+ * se abrió después), la ventana de abajo no puede quitarle el cursor a
+ * un campo del mensaje.
+ */
+document.addEventListener('focusin', function(evento) {
+  var destino = evento.target;
+  if (destino && destino.closest && destino.closest('.swal2-container')) {
+    evento.stopImmediatePropagation();
+  }
+}, true);
+
+pgsProtegerMensajesSobreVentanas();
+
+/* =========================================================
    ALERTAS GENÉRICAS
    ========================================================= */
 
